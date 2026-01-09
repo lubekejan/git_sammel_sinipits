@@ -1,0 +1,17 @@
+[style]
+    seed = 23
+
+[typst]
+    buchruecken_mm = 20
+    size_pt = 55
+
+[pictype]
+    style = "geometric_pattern" # "blobs_only", "organic_with_blobs", "organic_flowfield"
+
+[colors]
+    bg = "#F5FBE6"
+    c1 = "#215E61"
+    c2 = "#233D4D"
+    c3 = "#FE7F2D"
+    black = "#000000"
+    stroke = "#233D4D"

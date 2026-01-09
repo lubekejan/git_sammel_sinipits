@@ -2,6 +2,7 @@ import math
 import random
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
+import tomllib
 
 import svgwrite
 
@@ -172,7 +173,7 @@ def blob_path_d(
 class FlowConfig:
     width: int = 1200
     height: int = 1200
-    margin: int = 30
+    margin: int = 0
     seed: int = 7
 
     # Flow-field lines
@@ -286,15 +287,18 @@ def generate_svg(
 
 
 if __name__ == "__main__":
+    with open("config.toml", "rb") as f:
+        config = tomllib.load(f)
+    
     colors = {
-        "bg": "#F5FBE6",
-        "c1": "#215E61",
-        "c2": "#233D4D",
-        "c3": "#FE7F2D",
+        "bg": config["colors"]["bg"],
+        "c1": config["colors"]["c1"],
+        "c2": config["colors"]["c2"],
+        "c3": config["colors"]["c3"],
     }
 
     cfg = FlowConfig(
-        seed=11,
+        seed=config["style"]["seed"],
         n_blobs=26,
         blob_min_r=35,
         blob_max_r=140,

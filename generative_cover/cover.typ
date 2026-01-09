@@ -1,28 +1,28 @@
 
-#let buchruecken = 20mm
+#let config = toml("config.toml")
 
 #set page(
   background: place(
     center,
     image(
-      "organic_with_blobs.svg",
+      config.pictype.style + ".svg",
       width: 100%,
       height: 100%,
     )
   ),
-  width: 426mm + buchruecken,  // Klebebindung größe
+  width: 426mm + (config.typst.buchruecken_mm * 1mm),  // Klebebindung größe
   height: 154mm,
 )
 
 #place(
   right,
-  dx: -5%,
-  dy: 20%,
+  dx: 0%,
+  dy: 30%,
   text(
-    font: "0xProto Nerd Font",
-    weight: "bold",
-    size: 60pt,
-    fill: rgb("#000000"),
-    stroke: 1pt + rgb("#FFFFFF"),
+    font: "Candara",
+    weight: "light",
+    size: (config.typst.size_pt * 1pt),
+    fill: rgb(config.colors.black),
+    stroke: 0.5pt + rgb(config.colors.bg),
   )[best off 2025]
 )

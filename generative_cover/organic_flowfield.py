@@ -1,32 +1,39 @@
 import math
 import random
-import svgwrite
+import tomllib
 from dataclasses import dataclass
+
+import svgwrite
 
 # -------------------------
 # Smooth 2D Value Noise (deterministic) + fBm
 # -------------------------
+
 
 def _hash_int(n: int) -> int:
     # simple 32-bit mix
     n = (n ^ 61) ^ (n >> 16)
     n = n + (n << 3)
     n = n ^ (n >> 4)
-    n = n * 0x27d4eb2d
+    n = n * 0x27D4EB2D
     n = n ^ (n >> 15)
     return n & 0xFFFFFFFF
+
 
 def _rand2(ix: int, iy: int, seed: int) -> float:
     h = _hash_int(ix * 374761393 + iy * 668265263 + seed * 362437)
     # map to [0,1)
-    return (h / 2**32)
+    return h / 2**32
+
 
 def _fade(t: float) -> float:
     # Perlin fade curve
     return t * t * t * (t * (t * 6 - 15) + 10)
 
+
 def _lerp(a: float, b: float, t: float) -> float:
     return a + (b - a) * t
+
 
 def value_noise_2d(x: float, y: float, seed: int) -> float:
     x0 = math.floor(x)
@@ -46,7 +53,15 @@ def value_noise_2d(x: float, y: float, seed: int) -> float:
     ix1 = _lerp(n01, n11, sx)
     return _lerp(ix0, ix1, sy)  # [0,1]
 
-def fbm_2d(x: float, y: float, seed: int, octaves: int = 4, lacunarity: float = 2.0, gain: float = 0.5) -> float:
+
+def fbm_2d(
+    x: float,
+    y: float,
+    seed: int,
+    octaves: int = 4,
+    lacunarity: float = 2.0,
+    gain: float = 0.5,
+) -> float:
     amp = 1.0
     freq = 1.0
     total = 0.0
@@ -58,15 +73,17 @@ def fbm_2d(x: float, y: float, seed: int, octaves: int = 4, lacunarity: float = 
         freq *= lacunarity
     return total / max(norm, 1e-9)  # ~[0,1]
 
+
 # -------------------------
 # Flow field art generator
 # -------------------------
+
 
 @dataclass
 class Config:
     width: int = 1200
     height: int = 1200
-    margin: int = 30
+    margin: int = 0
 
     seed: int = 42
 
@@ -77,7 +94,7 @@ class Config:
     # Field controls (core of "organic look")
     field_scale: float = 0.0048  # smaller => larger swirls; bigger => finer turbulence
     octaves: int = 5
-    angle_turns: float = 1.0     # multiplier on angle range; 1.0 => full 0..2π
+    angle_turns: float = 1.0  # multiplier on angle range; 1.0 => full 0..2π
 
     # Styling
     background: str = "#0b0c10"
@@ -86,14 +103,19 @@ class Config:
     stroke_opacity_min: float = 0.06
     stroke_opacity_max: float = 0.20
 
-def generate_flowfield_svg(out_file: str = "organic_flowfield.svg", cfg: Config = Config()) -> None:
+
+def generate_flowfield_svg(
+    out_file: str = "organic_flowfield.svg", cfg: Config = Config()
+) -> None:
     rng = random.Random(cfg.seed)
 
     dwg = svgwrite.Drawing(out_file, size=(cfg.width, cfg.height))
     dwg.add(dwg.rect(insert=(0, 0), size=("100%", "100%"), fill=cfg.background))
 
     def inside(px: float, py: float) -> bool:
-        return (cfg.margin <= px <= cfg.width - cfg.margin) and (cfg.margin <= py <= cfg.height - cfg.margin)
+        return (cfg.margin <= px <= cfg.width - cfg.margin) and (
+            cfg.margin <= py <= cfg.height - cfg.margin
+        )
 
     for _ in range(cfg.n_lines):
         # random start inside margins
@@ -131,10 +153,14 @@ def generate_flowfield_svg(out_file: str = "organic_flowfield.svg", cfg: Config 
 
     dwg.save()
 
+
 if __name__ == "__main__":
+    with open("config.toml", "rb") as f:
+        config = tomllib.load(f)
+
     cfg = Config(
         # Sie können hier schnell tunen:
-        seed=5,
+        seed=config["style"]["seed"],
         n_lines=1600,
         steps_per_line=210,
         step_len=3.0,
@@ -143,8 +169,8 @@ if __name__ == "__main__":
         stroke_width=0.75,
         stroke_opacity_min=0.05,
         stroke_opacity_max=0.18,
-        background="#0b0c10",
-        stroke="#eaeaea",
+        background=config["colors"]["bg"],
+        stroke=config["colors"]["stroke"],
     )
     generate_flowfield_svg("organic_flowfield.svg", cfg)
     print("Wrote organic_flowfield.svg")
