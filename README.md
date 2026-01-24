@@ -1,4 +1,4 @@
-# git_sammel_sinipits
+# git_sammel_snipits
 Ein Repo um Codeschnipsel zu sammeln und hochzuladen
 
 ## generative_cover
