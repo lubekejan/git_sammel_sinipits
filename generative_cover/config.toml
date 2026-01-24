@@ -1,13 +1,16 @@
 [style]
     seed = 23
-    seedlist = [2822, 406, 1079, 7345, 3359, 3197, 3918, 1815]
+    seedlist = [2822, 406, 1079, 4, 29, 93874, 33]
 
 
 [pic_scripts]
-    blobs_only = true
-    geometric_patterns = true
-    organic_flowfield = true
-    organic_with_blobs = true
+    blobs_only = false
+    geometric_patterns = false
+    line_cuts = false
+    organic_flowfield = false
+    organic_with_blobs = false
+    random_walk_lines = false
+    solid_objects_3d = true
 
 
 [colors]
