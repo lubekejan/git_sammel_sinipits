@@ -1,12 +1,13 @@
 [style]
     seed = 23
+    seedlist = [2822, 406, 1079, 7345, 3359, 3197, 3918, 1815]
 
 
 [pic_scripts]
     blobs_only = true
-    geometric_patterns = false
-    organic_flowfield = false
-    organic_with_blobs = false
+    geometric_patterns = true
+    organic_flowfield = true
+    organic_with_blobs = true
 
 
 [colors]

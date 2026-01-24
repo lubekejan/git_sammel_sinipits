@@ -6,3 +6,4 @@ words = [
     "skripte",
     "svgwrite",
 ]
+ignore_paths = ["pyproject.toml"]

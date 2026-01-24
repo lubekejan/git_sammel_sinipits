@@ -1,9 +1,21 @@
+#!/usr/bin/env uv run
+"""Generate a flowfield SVG using config/variables paths."""
+
 import math
+import os
 import random
+import sys
 import tomllib
 from dataclasses import dataclass
+from pathlib import Path
 
 import svgwrite
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from py_helper import variables  # noqa: E402
 
 # -------------------------
 # Smooth 2D Value Noise (deterministic) + fBm
@@ -72,6 +84,19 @@ def fbm_2d(
         amp *= gain
         freq *= lacunarity
     return total / max(norm, 1e-9)  # ~[0,1]
+
+
+def _resolve_seed(config: dict) -> int:
+    env_seed = os.getenv("GEN_SEED")
+    if env_seed:
+        return int(env_seed)
+    style = config.get("style", {})
+    if style.get("seed") is not None:
+        return int(style["seed"])
+    seed_list = style.get("seedlist")
+    if isinstance(seed_list, list) and seed_list:
+        return int(seed_list[0])
+    raise ValueError("Missing [style].seed or [style].seedlist in config.toml")
 
 
 # -------------------------
@@ -155,12 +180,16 @@ def generate_flowfield_svg(
 
 
 if __name__ == "__main__":
-    with open("config.toml", "rb") as f:
+    config_path = ROOT / variables.CONFIG
+    output_dir = ROOT / variables.OUTPUT
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    with config_path.open("rb") as f:
         config = tomllib.load(f)
 
     cfg = Config(
         # Sie können hier schnell tunen:
-        seed=config["style"]["seed"],
+        seed=_resolve_seed(config),
         n_lines=1600,
         steps_per_line=210,
         step_len=3.0,
@@ -172,5 +201,6 @@ if __name__ == "__main__":
         background=config["colors"]["bg"],
         stroke=config["colors"]["stroke"],
     )
-    generate_flowfield_svg("organic_flowfield.svg", cfg)
-    print("Wrote organic_flowfield.svg")
+    out_path = output_dir / "tmp.svg"
+    generate_flowfield_svg(str(out_path), cfg)
+    print(f"Wrote {out_path}")

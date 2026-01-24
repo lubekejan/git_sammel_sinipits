@@ -1,10 +1,22 @@
+#!/usr/bin/env uv run
+"""Generate a flowfield + blobs SVG using config/variables paths."""
+
 import math
+import os
 import random
-from dataclasses import dataclass
-from typing import Dict, List, Tuple
+import sys
 import tomllib
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, List, Tuple
 
 import svgwrite
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from py_helper import variables  # noqa: E402
 
 # -------------------------
 # Smooth 2D Value Noise (deterministic) + fBm
@@ -70,6 +82,19 @@ def fbm_2d(
         amp *= gain
         freq *= lacunarity
     return total / max(norm, 1e-9)
+
+
+def _resolve_seed(config: dict) -> int:
+    env_seed = os.getenv("GEN_SEED")
+    if env_seed:
+        return int(env_seed)
+    style = config.get("style", {})
+    if style.get("seed") is not None:
+        return int(style["seed"])
+    seed_list = style.get("seedlist")
+    if isinstance(seed_list, list) and seed_list:
+        return int(seed_list[0])
+    raise ValueError("Missing [style].seed or [style].seedlist in config.toml")
 
 
 # -------------------------
@@ -287,9 +312,13 @@ def generate_svg(
 
 
 if __name__ == "__main__":
-    with open("config.toml", "rb") as f:
+    config_path = ROOT / variables.CONFIG
+    output_dir = ROOT / variables.OUTPUT
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    with config_path.open("rb") as f:
         config = tomllib.load(f)
-    
+
     colors = {
         "bg": config["colors"]["bg"],
         "c1": config["colors"]["c1"],
@@ -298,7 +327,7 @@ if __name__ == "__main__":
     }
 
     cfg = FlowConfig(
-        seed=config["style"]["seed"],
+        seed=_resolve_seed(config),
         n_blobs=26,
         blob_min_r=35,
         blob_max_r=140,
@@ -309,5 +338,6 @@ if __name__ == "__main__":
         field_octaves=6,
     )
 
-    generate_svg("organic_with_blobs.svg", colors, cfg)
-    print("Wrote organic_with_blobs.svg")
+    out_path = output_dir / "tmp.svg"
+    generate_svg(str(out_path), colors, cfg)
+    print(f"Wrote {out_path}")

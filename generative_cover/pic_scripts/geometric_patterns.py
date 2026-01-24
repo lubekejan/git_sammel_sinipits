@@ -1,22 +1,27 @@
-import random
+#!/usr/bin/env uv run
+"""Generate a geometric pattern SVG using config/variables paths."""
+
 import math
+import os
+import random
 import sys
+import tomllib
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, Tuple
 
 import svgwrite
 
-# Python 3.11+: tomllib ist in der Standardbibliothek
-try:
-    import tomllib  # type: ignore
-except ModuleNotFoundError:  # Python <= 3.10
-    # pip install tomli
-    import tomli as tomllib  # type: ignore
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
+from py_helper import variables  # noqa: E402
 
 # -------------------------
 # Configuration
 # -------------------------
+
 
 @dataclass
 class PatternConfig:
@@ -33,9 +38,11 @@ class PatternConfig:
     stroke_width: float = 3.2
     shape_fill_probability: float = 0.85  # sonst Outline
 
+
 # -------------------------
 # Shape generators
 # -------------------------
+
 
 def draw_circle(dwg, x, y, size, color, cfg, rng):
     r = size / 2
@@ -50,6 +57,7 @@ def draw_circle(dwg, x, y, size, color, cfg, rng):
         )
     )
 
+
 def draw_rect(dwg, x, y, size, color, cfg, rng):
     filled = rng.random() < cfg.shape_fill_probability
     dwg.add(
@@ -63,6 +71,7 @@ def draw_rect(dwg, x, y, size, color, cfg, rng):
             stroke_width=cfg.stroke_width,
         )
     )
+
 
 def draw_triangle(dwg, x, y, size, color, cfg, rng):
     h = size * math.sqrt(3) / 2
@@ -81,6 +90,7 @@ def draw_triangle(dwg, x, y, size, color, cfg, rng):
         )
     )
 
+
 def draw_lines(dwg, x, y, size, color, cfg, rng):
     count = rng.randint(3, 7)
     for i in range(count):
@@ -94,6 +104,7 @@ def draw_lines(dwg, x, y, size, color, cfg, rng):
             )
         )
 
+
 # SHAPES = [draw_circle, draw_rect, draw_triangle, draw_lines]
 SHAPES = [draw_circle, draw_triangle, draw_lines]
 
@@ -101,11 +112,15 @@ SHAPES = [draw_circle, draw_triangle, draw_lines]
 # TOML loading
 # -------------------------
 
+
 def load_toml_config(path: str) -> Dict:
     with open(path, "rb") as f:
         return tomllib.load(f)
 
-def cfg_from_toml(toml_data: Dict, fallback: PatternConfig | None = None) -> PatternConfig:
+
+def cfg_from_toml(
+    toml_data: Dict, fallback: PatternConfig | None = None
+) -> PatternConfig:
     cfg = fallback or PatternConfig()
 
     # Erwartet (wie in Ihrer Datei): [style].seed und [colors].bg/c1/c2/c3
@@ -127,9 +142,24 @@ def cfg_from_toml(toml_data: Dict, fallback: PatternConfig | None = None) -> Pat
 
     return cfg
 
+
+def _resolve_seed(config: Dict) -> int:
+    env_seed = os.getenv("GEN_SEED")
+    if env_seed:
+        return int(env_seed)
+    style = config.get("style", {})
+    if style.get("seed") is not None:
+        return int(style["seed"])
+    seed_list = style.get("seedlist")
+    if isinstance(seed_list, list) and seed_list:
+        return int(seed_list[0])
+    raise ValueError("Missing [style].seed or [style].seedlist in config.toml")
+
+
 # -------------------------
 # Main generator
 # -------------------------
+
 
 def generate_geometric_pattern(out_file: str, cfg: PatternConfig) -> None:
     rng = random.Random(cfg.seed)
@@ -155,17 +185,17 @@ def generate_geometric_pattern(out_file: str, cfg: PatternConfig) -> None:
 
     dwg.save()
 
+
 # -------------------------
 # Run
 # -------------------------
 
 if __name__ == "__main__":
-    # Usage:
-    #   python geometric_patterns_from_toml.py config.toml output.svg
-    toml_path = sys.argv[1] if len(sys.argv) >= 2 else "config.toml"
-    out_svg = sys.argv[2] if len(sys.argv) >= 3 else "geometric_pattern.svg"
+    config_path = ROOT / variables.CONFIG
+    output_dir = ROOT / variables.OUTPUT
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    data = load_toml_config(toml_path)
+    data = load_toml_config(str(config_path))
 
     # Optional: hier können Sie Default-Parameter setzen, die nicht im TOML stehen
     base = PatternConfig(
@@ -178,5 +208,9 @@ if __name__ == "__main__":
     )
 
     cfg = cfg_from_toml(data, base)
-    generate_geometric_pattern(out_svg, cfg)
-    print(f"Wrote {out_svg} (seed={cfg.seed}, bg={cfg.background}, palette={cfg.palette})")
+    cfg.seed = _resolve_seed(data)
+    out_path = output_dir / "tmp.svg"
+    generate_geometric_pattern(str(out_path), cfg)
+    print(
+        f"Wrote {out_path} (seed={cfg.seed}, bg={cfg.background}, palette={cfg.palette})"
+    )
