@@ -1,28 +1,28 @@
 [style]
+    height = 1080
     keep_svg = false
     seed = 23
-    seedlist = [3770, 8465, 2577, 7332]
-    width = 1200
-    height = 1200
+    seedlist = [1459, 7120, 241, 791, 9032, 592, 8096, 367, 3273, 9690, 1883, 8373, 4357, 4165, 577]
+    width = 1920
 
 
 [pic_scripts]
     blobs_only = false
     geometric_patterns = false
     line_cuts = false
-    organic_flowfield = false
+    music_to_pic_heatmap = false
+    music_to_pic_radial = false
+    organic_flowfield = true
     organic_with_blobs = false
     random_walk_lines = false
-    samila_pics = false
+    samila_pics = true
     solid_objects_3d = false
-    music_to_pic_radial = true
-    music_to_pic_heatmap = false
 
 
 [colors]
-    bg = "#F5FBE6"
+    bg = "#FFFDE1"
     black = "#000000"
-    c1 = "#215E61"
-    c2 = "#233D4D"
-    c3 = "#FE7F2D"
-    stroke = "#233D4D"
+    c1 = "#FBE580"
+    c2 = "#93BD57"
+    c3 = "#980404"
+    stroke = "#980404"
