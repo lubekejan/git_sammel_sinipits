@@ -1,8 +1,9 @@
 #!/usr/bin/env uv run
 """File utility helpers used across scripts."""
 
+import os
+import sys
 from pathlib import Path
-from typing import Optional
 
 
 def rename_file(source: Path, new_name: str) -> Path:
@@ -21,7 +22,7 @@ def rename_file(source: Path, new_name: str) -> Path:
 
 
 def svg_to_png(
-    source: Path, target: Optional[Path] = None, dpi: Optional[float] = None
+    source: Path, target: Path | None = None, dpi: float | None = None
 ) -> Path:
     """
     Convert an SVG file to PNG using cairosvg.
@@ -32,6 +33,9 @@ def svg_to_png(
     output_path = target or source.with_suffix(".png")
     effective_dpi = 96 if dpi is None else int(dpi)
 
+    if sys.platform == "darwin":
+        _ensure_macos_cairo_path()
+
     try:
         import cairosvg
     except ModuleNotFoundError as exc:
@@ -41,3 +45,15 @@ def svg_to_png(
 
     cairosvg.svg2png(url=str(source), write_to=str(output_path), dpi=effective_dpi)
     return output_path
+
+
+def _ensure_macos_cairo_path() -> None:
+    if os.environ.get("DYLD_FALLBACK_LIBRARY_PATH"):
+        return
+
+    candidates = ["/opt/homebrew/lib", "/usr/local/lib"]
+    existing = [path for path in candidates if Path(path).is_dir()]
+    if not existing:
+        return
+
+    os.environ["DYLD_FALLBACK_LIBRARY_PATH"] = ":".join(existing)

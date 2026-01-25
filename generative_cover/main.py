@@ -21,7 +21,8 @@ def main() -> None:
     with config_path.open("rb") as f:
         config: dict = tomllib.load(f)
 
-    seed_list = config.get("style", {}).get("seedlist")
+    style: dict = config.get("style", {})
+    seed_list = style.get("seedlist")
     if seed_list is None:
         raise ValueError("Missing [style].seedlist in config.toml")
     if not isinstance(seed_list, list) or not seed_list:
@@ -31,6 +32,8 @@ def main() -> None:
     pic_scripts: dict = config.get("pic_scripts", {})
     if not isinstance(pic_scripts, dict):
         raise TypeError("[pic_scripts] must be a table in config.toml")
+
+    keep_svg = bool(style.get("keep_svg", False))
 
     for script_name, enabled in pic_scripts.items():
         if not enabled:
@@ -52,10 +55,12 @@ def main() -> None:
             if not tmp_svg.exists():
                 raise FileNotFoundError(tmp_svg)
 
-            png_path = svg_to_png(tmp_svg)
-            tmp_svg.unlink()
-
             new_name = f"{script_name}_{seed}"
+            png_path = svg_to_png(tmp_svg)
+            if keep_svg:
+                rename_file(tmp_svg, new_name)
+            else:
+                tmp_svg.unlink()
             rename_file(png_path, new_name)
 
 

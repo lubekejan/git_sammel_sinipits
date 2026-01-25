@@ -1,6 +1,9 @@
 [style]
+    keep_svg = false
     seed = 23
-    seedlist = [2822, 406, 1079, 4, 29, 93874, 33]
+    seedlist = [3770, 8465, 2577, 7332]
+    width = 1200
+    height = 1200
 
 
 [pic_scripts]
@@ -10,7 +13,8 @@
     organic_flowfield = false
     organic_with_blobs = false
     random_walk_lines = false
-    solid_objects_3d = true
+    samila_pics = true
+    solid_objects_3d = false
 
 
 [colors]
