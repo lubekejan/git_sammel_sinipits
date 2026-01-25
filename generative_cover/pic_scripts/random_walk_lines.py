@@ -50,6 +50,13 @@ def _resolve_seed(config: dict) -> int:
     raise ValueError("Missing [style].seed or [style].seedlist in config.toml")
 
 
+def _resolve_size(config: dict, fallback: WalkConfig) -> tuple[int, int]:
+    style = config.get("style", {})
+    width = int(style.get("width", fallback.width))
+    height = int(style.get("height", fallback.height))
+    return width, height
+
+
 def _random_border_point(rng: random.Random, width: int, height: int) -> Point:
     side = rng.choice(["top", "right", "bottom", "left"])
     if side == "top":
@@ -146,6 +153,9 @@ if __name__ == "__main__":
     }
 
     cfg = WalkConfig(seed=_resolve_seed(config))
+    width, height = _resolve_size(config, cfg)
+    cfg.width = width
+    cfg.height = height
     out_path = output_dir / "tmp.svg"
     generate_random_walk_svg(str(out_path), colors, cfg)
     print(f"Wrote {out_path}")

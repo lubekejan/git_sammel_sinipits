@@ -124,7 +124,10 @@ def cfg_from_toml(
     cfg = fallback or PatternConfig()
 
     # Erwartet (wie in Ihrer Datei): [style].seed und [colors].bg/c1/c2/c3
-    seed = toml_data.get("style", {}).get("seed", cfg.seed)
+    style = toml_data.get("style", {})
+    seed = style.get("seed", cfg.seed)
+    width = int(style.get("width", cfg.width))
+    height = int(style.get("height", cfg.height))
     colors = toml_data.get("colors", {})
 
     bg = colors.get("bg", cfg.background)
@@ -137,6 +140,8 @@ def cfg_from_toml(
         raise ValueError(f"Im TOML fehlen Farben: {missing} (unter [colors]).")
 
     cfg.seed = int(seed)
+    cfg.width = width
+    cfg.height = height
     cfg.background = str(bg)
     cfg.palette = (str(c1), str(c2), str(c3))
 

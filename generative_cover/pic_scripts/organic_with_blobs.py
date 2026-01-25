@@ -229,6 +229,13 @@ class FlowConfig:
     blob_opacity_max: float = 0.80
 
 
+def _resolve_size(config: dict, fallback: FlowConfig) -> tuple[int, int]:
+    style = config.get("style", {})
+    width = int(style.get("width", fallback.width))
+    height = int(style.get("height", fallback.height))
+    return width, height
+
+
 def generate_svg(
     out_file: str, colors: Dict[str, str], cfg: FlowConfig = FlowConfig()
 ) -> None:
@@ -337,6 +344,9 @@ if __name__ == "__main__":
         field_scale=0.0045,
         field_octaves=6,
     )
+    width, height = _resolve_size(config, cfg)
+    cfg.width = width
+    cfg.height = height
 
     out_path = output_dir / "tmp.svg"
     generate_svg(str(out_path), colors, cfg)

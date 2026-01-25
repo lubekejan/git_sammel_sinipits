@@ -53,6 +53,11 @@ def cfg_from_toml(
 ) -> SamilaConfig:
     cfg = fallback or SamilaConfig()
 
+    style_obj = toml_data.get("style", {})
+    style = style_obj if isinstance(style_obj, dict) else {}
+    cfg.width = int(style.get("width", cfg.width))
+    cfg.height = int(style.get("height", cfg.height))
+
     colors_obj = toml_data.get("colors", {})
     colors = colors_obj if isinstance(colors_obj, dict) else {}
     bg = colors.get("bg", cfg.background)
@@ -90,6 +95,7 @@ def generate_samila_svg(out_file: str, cfg: SamilaConfig) -> None:
         cmap=list(cfg.palette),
         bgcolor=cfg.background,
         spot_size=cfg.spot_size,
+        size=(cfg.width / 100, cfg.height / 100),
     )
     image.save_image(out_file)
 

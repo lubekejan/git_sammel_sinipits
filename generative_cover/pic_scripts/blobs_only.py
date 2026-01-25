@@ -197,6 +197,13 @@ class BlobConfig:
     opacity_max: float = 0.70
 
 
+def _resolve_size(config: dict, fallback: BlobConfig) -> tuple[int, int]:
+    style = config.get("style", {})
+    width = int(style.get("width", fallback.width))
+    height = int(style.get("height", fallback.height))
+    return width, height
+
+
 def generate_blobs_svg(
     out_file: str, colors: Dict[str, str], cfg: BlobConfig = BlobConfig()
 ) -> None:
@@ -256,7 +263,7 @@ if __name__ == "__main__":
         "c3": config["colors"]["c3"],
     }
 
-    cfg = BlobConfig(
+    base = BlobConfig(
         seed=_resolve_seed(config),
         n_blobs=40,
         min_r=40,
@@ -268,6 +275,8 @@ if __name__ == "__main__":
         noise_scale=0.006,
         octaves=6,
     )
+    width, height = _resolve_size(config, base)
+    cfg = BlobConfig(**{**base.__dict__, "width": width, "height": height})
 
     out_path = output_dir / "tmp.svg"
     generate_blobs_svg(str(out_path), colors, cfg)

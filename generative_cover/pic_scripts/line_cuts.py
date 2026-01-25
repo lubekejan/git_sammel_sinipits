@@ -49,6 +49,13 @@ def _resolve_seed(config: dict) -> int:
     raise ValueError("Missing [style].seed or [style].seedlist in config.toml")
 
 
+def _resolve_size(config: dict, fallback: LineCutConfig) -> tuple[int, int]:
+    style = config.get("style", {})
+    width = int(style.get("width", fallback.width))
+    height = int(style.get("height", fallback.height))
+    return width, height
+
+
 def _line_through_rect(
     rng: random.Random, width: int, height: int, margin: int
 ) -> LineString:
@@ -158,6 +165,9 @@ if __name__ == "__main__":
     n_lines = rng.randint(15, 30)
 
     cfg = LineCutConfig(seed=seed, n_lines=n_lines)
+    width, height = _resolve_size(config, cfg)
+    cfg.width = width
+    cfg.height = height
     out_path = output_dir / "tmp.svg"
     generate_line_cuts_svg(str(out_path), colors, cfg)
     print(f"Wrote {out_path}")

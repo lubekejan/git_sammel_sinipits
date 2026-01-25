@@ -48,6 +48,13 @@ def _resolve_seed(config: dict) -> int:
     raise ValueError("Missing [style].seed or [style].seedlist in config.toml")
 
 
+def _resolve_size(config: dict, fallback: SolidConfig) -> tuple[int, int]:
+    style = config.get("style", {})
+    width = int(style.get("width", fallback.width))
+    height = int(style.get("height", fallback.height))
+    return width, height
+
+
 def _hex_to_rgb(color: str) -> Tuple[int, int, int]:
     color = color.lstrip("#")
     return tuple(int(color[i : i + 2], 16) for i in (0, 2, 4))  # pyright: ignore[reportReturnType]
@@ -428,6 +435,9 @@ if __name__ == "__main__":
     }
 
     cfg = SolidConfig(seed=_resolve_seed(config))
+    width, height = _resolve_size(config, cfg)
+    cfg.width = width
+    cfg.height = height
     out_path = output_dir / "tmp.svg"
     generate_solids_svg(str(out_path), colors, cfg)
     print(f"Wrote {out_path}")

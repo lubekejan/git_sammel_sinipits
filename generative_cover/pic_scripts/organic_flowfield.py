@@ -129,6 +129,13 @@ class Config:
     stroke_opacity_max: float = 0.20
 
 
+def _resolve_size(config: dict, fallback: Config) -> tuple[int, int]:
+    style = config.get("style", {})
+    width = int(style.get("width", fallback.width))
+    height = int(style.get("height", fallback.height))
+    return width, height
+
+
 def generate_flowfield_svg(
     out_file: str = "organic_flowfield.svg", cfg: Config = Config()
 ) -> None:
@@ -201,6 +208,9 @@ if __name__ == "__main__":
         background=config["colors"]["bg"],
         stroke=config["colors"]["stroke"],
     )
+    width, height = _resolve_size(config, cfg)
+    cfg.width = width
+    cfg.height = height
     out_path = output_dir / "tmp.svg"
     generate_flowfield_svg(str(out_path), cfg)
     print(f"Wrote {out_path}")
