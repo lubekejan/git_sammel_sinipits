@@ -13,8 +13,10 @@
     organic_flowfield = false
     organic_with_blobs = false
     random_walk_lines = false
-    samila_pics = true
+    samila_pics = false
     solid_objects_3d = false
+    music_to_pic_radial = true
+    music_to_pic_heatmap = false
 
 
 [colors]
