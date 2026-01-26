@@ -1,9 +1,10 @@
 [style]
-    height = 1080
+    height = 1440
     keep_svg = false
     seed = 23
     seedlist = [1459, 7120, 241, 791, 9032, 592, 8096, 367, 3273, 9690, 1883, 8373, 4357, 4165, 577]
-    width = 1920
+    width = 3440
+    no_png = true
 
 
 [pic_scripts]

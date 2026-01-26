@@ -34,6 +34,8 @@ def main() -> None:
         raise TypeError("[pic_scripts] must be a table in config.toml")
 
     keep_svg = bool(style.get("keep_svg", False))
+    no_png = bool(style.get("no_png", False))
+    effective_keep_svg = keep_svg or no_png
 
     for script_name, enabled in pic_scripts.items():
         if not enabled:
@@ -56,12 +58,14 @@ def main() -> None:
                 raise FileNotFoundError(tmp_svg)
 
             new_name = f"{script_name}_{seed}"
-            png_path = svg_to_png(tmp_svg)
-            if keep_svg:
+            if not no_png:
+                png_path = svg_to_png(tmp_svg)
+            if effective_keep_svg:
                 rename_file(tmp_svg, new_name)
             else:
                 tmp_svg.unlink()
-            rename_file(png_path, new_name)
+            if not no_png:
+                rename_file(png_path, new_name)
 
 
 if __name__ == "__main__":
